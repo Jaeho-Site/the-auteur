@@ -69,14 +69,10 @@ export function App() {
     setScreen('prologue')
   }, [])
 
-  const handleNavigate = useCallback((target: Screen) => {
-    setScreen(target)
-  }, [])
-
   return (
     <div className="dark bg-surface text-on-surface font-body min-h-screen overflow-x-hidden selection:bg-primary/30">
       <GrainOverlay />
-      <Header currentScreen={screen} onNavigate={handleNavigate} />
+      <Header currentScreen={screen} onGoHome={handleRestart} />
 
       {screen === 'prologue' && (
         <PrologueScreen onEnter={() => setScreen('genre-select')} />
