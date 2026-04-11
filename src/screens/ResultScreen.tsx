@@ -61,22 +61,24 @@ export function ResultScreen({ characterName, result, isLoading, onRestart }: Re
             </section>
 
             {/* Key Journey Recap */}
-            <section className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {result.choicesSummary.map((item, idx) => (
-                <div
-                  key={idx}
-                  className="flex flex-col items-center text-center p-8 bg-surface-container-high/20 border-t border-primary/20"
-                >
-                  <span className="material-symbols-outlined text-primary/60 mb-4 text-3xl">
-                    {item.icon}
-                  </span>
-                  <span className="font-label text-[9px] uppercase tracking-widest text-primary/60 mb-2">
-                    {item.label}
-                  </span>
-                  <p className="font-body text-sm text-on-surface/80">{item.description}</p>
-                </div>
-              ))}
-            </section>
+            {result.choicesSummary && result.choicesSummary.length > 0 && (
+              <section className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                {result.choicesSummary.map((item, idx) => (
+                  <div
+                    key={idx}
+                    className="flex flex-col items-center text-center p-8 bg-surface-container-high/20 border-t border-primary/20"
+                  >
+                    <span className="material-symbols-outlined text-primary/60 mb-4 text-3xl">
+                      {item.icon}
+                    </span>
+                    <span className="font-label text-[9px] uppercase tracking-widest text-primary/60 mb-2">
+                      {item.label}
+                    </span>
+                    <p className="font-body text-sm text-on-surface/80">{item.description}</p>
+                  </div>
+                ))}
+              </section>
+            )}
 
             {/* Final CTA */}
             <section className="flex flex-col items-center pt-20 border-t border-outline-variant/10">

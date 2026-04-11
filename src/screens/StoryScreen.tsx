@@ -11,7 +11,7 @@ interface StoryScreenProps {
   isGeneratingFinal: boolean
 }
 
-const MAX_TURNS = 5
+const MAX_TURNS = 3
 
 function NarrativeBody({ text }: { text: string }) {
   return (

@@ -46,7 +46,7 @@ export interface GameState {
 export interface FinalResult {
   finalSentence: string
   fate: string
-  choicesSummary: Array<{
+  choicesSummary?: Array<{
     icon: string
     label: string
     description: string
