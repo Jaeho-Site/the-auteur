@@ -22,10 +22,6 @@ export function App() {
   const [isGeneratingFinal, setIsGeneratingFinal] = useState(false)
   const { generateFinalResult } = useGemini()
 
-  const handleNavigate = useCallback((target: Screen) => {
-    setScreen(target)
-  }, [])
-
   const handleGenreSelect = useCallback((genre: Genre) => {
     setGameState((prev) => ({ ...prev, genre }))
     setScreen('character-setup')
@@ -41,29 +37,36 @@ export function App() {
     setScreen('story')
   }, [])
 
-  const handleChoiceMade = useCallback((turn: StoryTurn) => {
-    setGameState((prev) => ({ ...prev, turns: [...prev.turns, turn] }))
-  }, [])
-
-  const handleFinishStory = useCallback(async () => {
-    setIsGeneratingFinal(true)
-    setScreen('result')
-    try {
-      const { genre, character, turns } = gameState
+  // StoryScreen이 3막을 모두 완료하면 turns를 직접 전달받아 처리
+  const handleStoryComplete = useCallback(
+    async (turns: StoryTurn[]) => {
+      const { genre, character } = gameState
       if (!genre || !character) return
-      const result = await generateFinalResult(genre, character, turns)
-      setGameState((prev) => ({ ...prev, finalResult: result }))
-    } catch {
-      // error shown in ResultScreen via isLoading state
-    } finally {
-      setIsGeneratingFinal(false)
-    }
-  }, [gameState, generateFinalResult])
+
+      setGameState((prev) => ({ ...prev, turns }))
+      setIsGeneratingFinal(true)
+      setScreen('result')
+
+      try {
+        const result = await generateFinalResult(genre, character, turns)
+        setGameState((prev) => ({ ...prev, finalResult: result }))
+      } catch {
+        // ResultScreen이 isLoading 상태로 오류 처리
+      } finally {
+        setIsGeneratingFinal(false)
+      }
+    },
+    [gameState, generateFinalResult]
+  )
 
   const handleRestart = useCallback(() => {
     setGameState(INITIAL_STATE)
     setIsGeneratingFinal(false)
     setScreen('prologue')
+  }, [])
+
+  const handleNavigate = useCallback((target: Screen) => {
+    setScreen(target)
   }, [])
 
   return (
@@ -87,9 +90,7 @@ export function App() {
         <StoryScreen
           genre={gameState.genre}
           character={gameState.character}
-          completedTurns={gameState.turns}
-          onChoiceMade={handleChoiceMade}
-          onFinish={handleFinishStory}
+          onComplete={handleStoryComplete}
           isGeneratingFinal={isGeneratingFinal}
         />
       )}

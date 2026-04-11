@@ -27,9 +27,12 @@ export interface Character {
   jobClass: JobClass
 }
 
-export interface StoryTurn {
+export interface StoryAct {
   narrative: string
   choices: [string, string]
+}
+
+export interface StoryTurn extends StoryAct {
   selectedChoice: string | null
 }
 

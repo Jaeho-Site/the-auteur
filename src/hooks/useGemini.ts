@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react'
 import { GoogleGenerativeAI } from '@google/generative-ai'
-import type { Genre, JobClass, StoryTurn, FinalResult } from '../types'
+import type { Genre, JobClass, StoryAct, StoryTurn, FinalResult } from '../types'
 
 const getApiKey = (): string => {
   const key = import.meta.env.VITE_GEMINI_API_KEY
@@ -11,12 +11,10 @@ const getApiKey = (): string => {
 }
 
 interface UseGeminiReturn {
-  generateStoryTurn: (
+  generateAllActs: (
     genre: Genre,
-    character: { name: string; jobClass: JobClass },
-    previousTurns: StoryTurn[],
-    turnNumber: number
-  ) => Promise<{ narrative: string; choices: [string, string] }>
+    character: { name: string; jobClass: JobClass }
+  ) => Promise<StoryAct[]>
   generateFinalResult: (
     genre: Genre,
     character: { name: string; jobClass: JobClass },
@@ -30,44 +28,36 @@ export function useGemini(): UseGeminiReturn {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const generateStoryTurn = useCallback(
+  const generateAllActs = useCallback(
     async (
       genre: Genre,
-      character: { name: string; jobClass: JobClass },
-      previousTurns: StoryTurn[],
-      turnNumber: number
-    ): Promise<{ narrative: string; choices: [string, string] }> => {
+      character: { name: string; jobClass: JobClass }
+    ): Promise<StoryAct[]> => {
       setIsLoading(true)
       setError(null)
       try {
         const genAI = new GoogleGenerativeAI(getApiKey())
         const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
 
-        const historyText = previousTurns
-          .filter((t) => t.selectedChoice !== null)
-          .map(
-            (t, i) =>
-              `[${i + 1}막] 서사: ${t.narrative}\n선택: ${t.selectedChoice}`
-          )
-          .join('\n\n')
-
         const prompt = `당신은 시네마틱한 한국어 인터랙티브 소설의 서술자입니다.
 
 장르: ${genre}
 주인공 이름: ${character.name}
 직업: ${character.jobClass}
-현재 막: ${turnNumber + 1}막 / 3막
 
-${historyText ? `이전 스토리:\n${historyText}\n\n` : ''}
-
-위 설정으로 ${turnNumber === 0 ? '이야기를 시작하는' : '이야기를 이어가는'} 짧고 강렬한 서사 단락(3~5문장)을 한국어로 작성하세요.
-그 다음, 주인공이 선택할 수 있는 두 가지 선택지를 제시하세요. 각 선택지는 짧고 행동 지향적(10~15자)이어야 합니다.
+기승전결이 있는 3막 구조의 이야기 전체를 한 번에 작성하세요.
+- 각 막은 짧고 강렬한 서사(3~5문장)로 구성됩니다.
+- 각 막 말미에 주인공이 선택할 수 있는 두 가지 선택지(10~15자)를 제시합니다.
+- 1막은 도입부, 2막은 위기·전환, 3막은 절정으로 구성하세요.
+- 이야기 전체가 하나의 일관된 흐름을 가져야 합니다.
 
 반드시 다음 JSON 형식으로만 응답하세요 (다른 텍스트 없이):
 {
-  "narrative": "서사 내용",
-  "choice1": "첫 번째 선택지",
-  "choice2": "두 번째 선택지"
+  "acts": [
+    { "narrative": "1막 서사", "choice1": "선택지A", "choice2": "선택지B" },
+    { "narrative": "2막 서사", "choice1": "선택지A", "choice2": "선택지B" },
+    { "narrative": "3막 서사", "choice1": "선택지A", "choice2": "선택지B" }
+  ]
 }`
 
         const result = await model.generateContent(prompt)
@@ -77,15 +67,13 @@ ${historyText ? `이전 스토리:\n${historyText}\n\n` : ''}
         if (!jsonMatch) throw new Error('AI 응답 파싱 실패')
 
         const parsed = JSON.parse(jsonMatch[0]) as {
-          narrative: string
-          choice1: string
-          choice2: string
+          acts: Array<{ narrative: string; choice1: string; choice2: string }>
         }
 
-        return {
-          narrative: parsed.narrative,
-          choices: [parsed.choice1, parsed.choice2],
-        }
+        return parsed.acts.map((act) => ({
+          narrative: act.narrative,
+          choices: [act.choice1, act.choice2] as [string, string],
+        }))
       } catch (err) {
         const message = err instanceof Error ? err.message : '알 수 없는 오류'
         setError(message)
@@ -171,5 +159,5 @@ ${storyHistory}
     []
   )
 
-  return { generateStoryTurn, generateFinalResult, isLoading, error }
+  return { generateAllActs, generateFinalResult, isLoading, error }
 }
