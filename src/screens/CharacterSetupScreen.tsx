@@ -129,7 +129,7 @@ export function CharacterSetupScreen({ onConfirm }: CharacterSetupScreenProps) {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="이름을 입력하세요"
-            className="w-full max-w-lg bg-transparent border-0 border-b-2 border-outline-variant focus:border-primary focus:ring-0 text-center font-headline text-3xl md:text-4xl text-on-surface transition-all duration-500 py-4 italic outline-none placeholder:text-neutral-700"
+            className="w-full max-w-lg bg-transparent border-0 border-b-2 border-outline-variant focus:border-primary focus:ring-0 text-center font-headline text-3xl md:text-4xl text-on-surface transition-all duration-500 py-4 italic outline-none placeholder:text-on-surface/30"
           />
         </div>
 

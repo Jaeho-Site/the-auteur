@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import { GrainOverlay } from './components/GrainOverlay'
 import { Header } from './components/Header'
 import { PrologueScreen } from './screens/PrologueScreen'
@@ -21,6 +21,11 @@ export function App() {
   const [gameState, setGameState] = useState<GameState>(INITIAL_STATE)
   const [isGeneratingFinal, setIsGeneratingFinal] = useState(false)
   const { generateFinalResult } = useGemini()
+
+  // 화면 전환 시 항상 최상단으로
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [screen])
 
   const handleGenreSelect = useCallback((genre: Genre) => {
     setGameState((prev) => ({ ...prev, genre }))
