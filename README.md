@@ -18,9 +18,9 @@
 
 ## Architecture
 
-<p align="center">
-  <img src="public/the-auteur-architecture.png" width="480" alt="architecture" />
-</p>
+
+<img src="public/the-auteur-architecture.png" width="480" alt="architecture" />
+
 
 - **AWS Amplify** — React/Vite 정적 호스팅
 - **API Gateway + Lambda** — Gemini API 프록시 (키 노출 방지)
