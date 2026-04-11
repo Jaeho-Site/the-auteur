@@ -61,41 +61,9 @@ function mockGetFinalResult(turns: StoryTurn[]): FinalResult {
   return { finalSentence: found.finalSentence, fate: found.fate }
 }
 
-// ── localStorage — "이미 본 결과" 추적 ────────────────────────────────────
-
-const LS_KEY = 'auteur_seen_results'
-
-function getSeenKeys(): Set<string> {
-  try {
-    const raw = localStorage.getItem(LS_KEY)
-    return new Set(raw ? (JSON.parse(raw) as string[]) : [])
-  } catch {
-    return new Set()
-  }
-}
-
-function markAsSeen(key: string): void {
-  try {
-    const seen = getSeenKeys()
-    seen.add(key)
-    localStorage.setItem(LS_KEY, JSON.stringify([...seen]))
-  } catch {
-    // localStorage 사용 불가 환경에서는 무시
-  }
-}
-
-/**
- * 장르:직업:A-B-A 형태의 결과 고유 키 생성
- * _currentMockEntry의 choices.A와 비교해 A/B를 판별한다.
- */
-function buildResultKey(genre: Genre, character: { jobClass: JobClass }, turns: StoryTurn[]): string {
-  const seq = turns
-    .map((turn, i) => (turn.selectedChoice === _currentMockEntry?.acts[i]?.choices.A ? 'A' : 'B'))
-    .join('-')
-  return `${genre}:${character.jobClass}:${seq}`
-}
-
-// ── API helper ─────────────────────────────────────────────────────────────
+// ── Gemini API 연동 (Lambda 프록시) ───────────────────────────────────────
+// AWS Lambda → Gemini 2.5 Flash 를 통해 스토리와 결말을 동적으로 생성한다.
+// Lambda 엔드포인트: POST /generate-acts, POST /generate-result
 
 function getBaseUrl(): string {
   const url = import.meta.env.VITE_API_BASE_URL
@@ -103,7 +71,7 @@ function getBaseUrl(): string {
   return url.replace(/\/$/, '')
 }
 
-async function apiGenerateFinalResult(
+export async function generateFinalResultFromAPI(
   genre: Genre,
   character: { name: string; jobClass: JobClass },
   turns: StoryTurn[]
@@ -140,10 +108,6 @@ export function useGemini(): UseGeminiReturn {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  /**
-   * 항상 목업 데이터 반환.
-   * 어차피 고정된 시나리오이므로 API 호출 불필요.
-   */
   const generateAllActs = useCallback(
     async (
       genre: Genre,
@@ -164,36 +128,16 @@ export function useGemini(): UseGeminiReturn {
     []
   )
 
-  /**
-   * 결과 전략:
-   *  - 처음 보는 결과 → 목업 즉시 반환 + localStorage에 기록
-   *  - 동일 경로를 다시 선택한 경우 → 실제 API 호출 (실패 시 목업 폴백)
-   */
   const generateFinalResult = useCallback(
     async (
-      genre: Genre,
-      character: { name: string; jobClass: JobClass },
+      _genre: Genre,
+      _character: { name: string; jobClass: JobClass },
       turns: StoryTurn[]
     ): Promise<FinalResult> => {
       setIsLoading(true)
       setError(null)
       try {
-        const resultKey = buildResultKey(genre, character, turns)
-        const seen = getSeenKeys()
-
-        if (!seen.has(resultKey)) {
-          // 첫 번째 플레이: 목업 반환 후 키 저장
-          markAsSeen(resultKey)
-          return mockGetFinalResult(turns)
-        }
-
-        // 동일 경로 재플레이: 실제 API 시도
-        try {
-          return await apiGenerateFinalResult(genre, character, turns)
-        } catch (apiErr) {
-          console.warn('[useGemini] API 실패, 목업으로 대체합니다:', apiErr)
-          return mockGetFinalResult(turns)
-        }
+        return mockGetFinalResult(turns)
       } catch (err) {
         const message = err instanceof Error ? err.message : '알 수 없는 오류'
         setError(message)
