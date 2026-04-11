@@ -11,7 +11,15 @@ interface StoryScreenProps {
   isGeneratingFinal: boolean
 }
 
-const MAX_TURNS = 3
+const MAX_TURNS = 5
+
+function NarrativeBody({ text }: { text: string }) {
+  return (
+    <p className="w-full max-w-xl mx-auto font-body text-lg md:text-xl leading-loose text-on-surface/90 text-center">
+      {text}
+    </p>
+  )
+}
 
 export function StoryScreen({ genre, character, onComplete, isGeneratingFinal }: StoryScreenProps) {
   const { generateAllActs, isLoading, error } = useGemini()
@@ -48,8 +56,9 @@ export function StoryScreen({ genre, character, onComplete, isGeneratingFinal }:
     }
     const nextTurns = [...completedTurns, completedTurn]
 
-    // 마지막 막이면 바로 완료 콜백
+    // 마지막 막이면 바로 완료 콜백 (isTransitioning으로 더블클릭 방어)
     if (actIndex + 1 >= MAX_TURNS) {
+      setIsTransitioning(true)
       onComplete(nextTurns)
       return
     }
@@ -125,14 +134,19 @@ export function StoryScreen({ genre, character, onComplete, isGeneratingFinal }:
 
             {/* 서사 + 선택지 — fade 트랜지션 */}
             <article
-              className="text-center space-y-12 w-full transition-opacity duration-400"
+              className="w-full transition-opacity duration-400"
               style={{ opacity: isTransitioning ? 0 : 1 }}
             >
-              <p className="font-headline text-2xl md:text-3xl leading-relaxed text-on-surface italic font-light opacity-90 tracking-tight">
-                {currentAct.narrative}
-              </p>
+              <NarrativeBody text={currentAct.narrative} />
 
-              <div className="mt-16 w-full flex flex-col md:flex-row gap-6 justify-center items-stretch">
+              {/* 구분선 */}
+              <div className="mt-14 mb-2 flex items-center gap-4 max-w-xl mx-auto">
+                <div className="flex-1 h-[1px] bg-gradient-to-r from-transparent to-outline-variant/30" />
+                <span className="font-label text-[9px] uppercase tracking-[0.3em] text-on-surface/30">선택</span>
+                <div className="flex-1 h-[1px] bg-gradient-to-l from-transparent to-outline-variant/30" />
+              </div>
+
+              <div className="mt-4 w-full flex flex-col md:flex-row gap-4 justify-center items-stretch max-w-2xl mx-auto">
                 {currentAct.choices.map((choice, idx) => (
                   <button
                     key={idx}

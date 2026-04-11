@@ -39,24 +39,38 @@ export function useGemini(): UseGeminiReturn {
         const genAI = new GoogleGenerativeAI(getApiKey())
         const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
 
-        const prompt = `당신은 시네마틱한 한국어 인터랙티브 소설의 서술자입니다.
+        const prompt = `당신은 한국어 인터랙티브 소설 작가입니다.
 
 장르: ${genre}
 주인공 이름: ${character.name}
 직업: ${character.jobClass}
 
-기승전결이 있는 3막 구조의 이야기 전체를 한 번에 작성하세요.
-- 각 막은 짧고 강렬한 서사(3~5문장)로 구성됩니다.
-- 각 막 말미에 주인공이 선택할 수 있는 두 가지 선택지(10~15자)를 제시합니다.
-- 1막은 도입부, 2막은 위기·전환, 3막은 절정으로 구성하세요.
-- 이야기 전체가 하나의 일관된 흐름을 가져야 합니다.
+아래 규칙에 따라 5막 구조의 이야기를 작성하세요.
+
+[서사 규칙]
+- 각 막의 서사는 3~4문장, 간결하고 핵심만 담을 것.
+- 각 막은 바로 앞 막의 사건을 원인으로 이어지는 인과 구조여야 한다.
+- 장르와 주인공 직업이 서사에 자연스럽게 녹아들어야 한다.
+- 5막 전체가 하나의 완결된 이야기 호를 이루어야 한다.
+  - 1막: 발단 — 사건의 시작
+  - 2막: 전개 — 첫 번째 위기
+  - 3막: 위기 — 상황 악화 혹은 반전
+  - 4막: 절정 — 핵심 갈등의 정점
+  - 5막: 결말 직전 — 마지막 선택의 기로
+
+[선택지 규칙]
+- 선택지는 반드시 그 막의 서사 상황에서 자연스럽게 발생하는 두 가지 행동이어야 한다.
+- 선택지 두 개의 방향성은 대조적이어야 한다 (예: 도망 vs 맞섬, 믿음 vs 의심, 한다 vs 안한다).
+- 각 선택지는 10자 내외의 짧은 행동 표현으로 작성한다.
 
 반드시 다음 JSON 형식으로만 응답하세요 (다른 텍스트 없이):
 {
   "acts": [
     { "narrative": "1막 서사", "choice1": "선택지A", "choice2": "선택지B" },
     { "narrative": "2막 서사", "choice1": "선택지A", "choice2": "선택지B" },
-    { "narrative": "3막 서사", "choice1": "선택지A", "choice2": "선택지B" }
+    { "narrative": "3막 서사", "choice1": "선택지A", "choice2": "선택지B" },
+    { "narrative": "4막 서사", "choice1": "선택지A", "choice2": "선택지B" },
+    { "narrative": "5막 서사", "choice1": "선택지A", "choice2": "선택지B" }
   ]
 }`
 
@@ -100,29 +114,34 @@ export function useGemini(): UseGeminiReturn {
         const storyHistory = turns
           .map(
             (t, i) =>
-              `[${i + 1}막] 서사: ${t.narrative}\n선택: ${t.selectedChoice ?? '미선택'}`
+              `[${i + 1}막] ${t.narrative} → 선택: "${t.selectedChoice ?? '미선택'}"`
           )
-          .join('\n\n')
+          .join('\n')
 
-        const prompt = `당신은 시네마틱한 한국어 인터랙티브 소설의 서술자입니다.
+        const prompt = `당신은 한국어 인터랙티브 소설 작가입니다.
 
 장르: ${genre}
 주인공 이름: ${character.name}
 직업: ${character.jobClass}
 
-전체 스토리:
+아래는 주인공이 걸어온 5막의 여정과 각 막에서 내린 선택입니다:
+
 ${storyHistory}
 
-위 이야기의 결말을 작성해 주세요.
+[결말 작성 규칙]
+- 결말은 위의 선택들이 쌓인 직접적인 결과여야 한다. 선택과 결말 사이의 인과가 명확해야 한다.
+- finalSentence: 주인공의 최후를 묘사하는 두 문장. 서사의 흐름과 선택이 어떻게 이 결말을 만들었는지 느껴지도록 쓸 것.
+- fate: "${character.name}, [선택들을 관통하는 주인공의 특성 한 구절]" 형식의 한 줄 요약.
+- keyMoments: 5막 중 결말에 가장 큰 영향을 준 3개의 막을 골라, 그 선택이 어떤 결과를 낳았는지 한 문장씩 서술한다.
 
 반드시 다음 JSON 형식으로만 응답하세요 (다른 텍스트 없이):
 {
-  "finalSentence": "주인공의 운명을 묘사하는 한두 문장의 강렬한 최종 선고 (따옴표 포함)",
-  "fate": "주인공의 이름과 직업을 포함한 한 줄 운명 요약 (예: '${character.name}, 생존을 갈구했던 ${character.jobClass}')",
-  "choices": [
-    { "label": "선택 01", "description": "첫 번째 막에서 한 선택의 결과 한 문장" },
-    { "label": "선택 02", "description": "두 번째 막에서 한 선택의 결과 한 문장" },
-    { "label": "최종 결정", "description": "마지막 막의 선택과 그 결과 한 문장" }
+  "finalSentence": "결말 두 문장",
+  "fate": "${character.name}, [한 줄 요약]",
+  "keyMoments": [
+    { "actNumber": 1, "label": "제 1막의 선택", "description": "이 선택이 낳은 결과 한 문장" },
+    { "actNumber": 3, "label": "제 3막의 선택", "description": "이 선택이 낳은 결과 한 문장" },
+    { "actNumber": 5, "label": "제 5막의 선택", "description": "이 선택이 낳은 결과 한 문장" }
   ]
 }`
 
@@ -135,17 +154,17 @@ ${storyHistory}
         const parsed = JSON.parse(jsonMatch[0]) as {
           finalSentence: string
           fate: string
-          choices: Array<{ label: string; description: string }>
+          keyMoments: Array<{ actNumber: number; label: string; description: string }>
         }
 
-        const icons = ['terminal', 'direction_run', 'error']
+        const icons = ['looks_one', 'looks_3', 'looks_5']
         return {
           finalSentence: parsed.finalSentence,
           fate: parsed.fate,
-          choicesSummary: parsed.choices.map((c, i) => ({
+          choicesSummary: parsed.keyMoments.map((m, i) => ({
             icon: icons[i] ?? 'star',
-            label: c.label,
-            description: c.description,
+            label: m.label,
+            description: m.description,
           })),
         }
       } catch (err) {

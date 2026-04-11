@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import { GrainOverlay } from './components/GrainOverlay'
 import { Header } from './components/Header'
 import { PrologueScreen } from './screens/PrologueScreen'
@@ -38,9 +38,13 @@ export function App() {
   }, [])
 
   // StoryScreen이 3막을 모두 완료하면 turns를 직접 전달받아 처리
+  // gameStateRef를 통해 genre/character를 안정적으로 참조 (stale closure 방지)
+  const gameStateRef = useRef(gameState)
+  gameStateRef.current = gameState
+
   const handleStoryComplete = useCallback(
     async (turns: StoryTurn[]) => {
-      const { genre, character } = gameState
+      const { genre, character } = gameStateRef.current
       if (!genre || !character) return
 
       setGameState((prev) => ({ ...prev, turns }))
@@ -56,7 +60,7 @@ export function App() {
         setIsGeneratingFinal(false)
       }
     },
-    [gameState, generateFinalResult]
+    [generateFinalResult]
   )
 
   const handleRestart = useCallback(() => {
