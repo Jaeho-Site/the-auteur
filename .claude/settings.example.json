@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(claude mcp:*)",
+      "mcp__stitch__get_project",
+      "mcp__stitch__get_screen",
+      "Bash(curl -sL \"https://exmaple1.html)",
+      "Bash(curl -sL \"https://exmaple2.html)",
+      "Bash(curl -sL \"https://exmaple3.html)",
+      "Bash(curl -sL \"https://exmaple4.html)",
+      "Bash(curl -sL \"https://exmaple5.html)",
+      "Bash(npm create:*)",
+      "Bash(npm install:*)",
+      "Bash(node node_modules/esbuild/install.js)",
+      "Bash(npx tsc:*)",
+      "Bash(VITE_GEMINI_API_KEY=test npx vite build)"
+    ]
+  }
+}
