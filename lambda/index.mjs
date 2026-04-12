@@ -2,7 +2,7 @@
  * THE AUTEUR — Gemini API Proxy
  * AWS Lambda (Node.js 20.x) + API Gateway HTTP API
  *
- * POST /generate-acts    → 5막 전체 생성
+ * POST /generate-acts    → 3막 전체 생성
  * POST /generate-result  → 최종 결말 생성
  * OPTIONS *              → CORS preflight 응답
  *
@@ -87,18 +87,16 @@ async function generateActs({ genre, character }) {
 주인공 이름: ${character.name}
 직업: ${character.jobClass}
 
-아래 규칙에 따라 5막 구조의 이야기를 작성하세요.
+아래 규칙에 따라 3막 구조의 이야기를 작성하세요.
 
 [서사 규칙]
 - 각 막의 서사는 3~4문장, 간결하고 핵심만 담을 것.
 - 각 막은 바로 앞 막의 사건을 원인으로 이어지는 인과 구조여야 한다.
 - 장르와 주인공 직업이 서사에 자연스럽게 녹아들어야 한다.
-- 5막 전체가 하나의 완결된 이야기 호를 이루어야 한다.
-  - 1막: 발단 — 사건의 시작
-  - 2막: 전개 — 첫 번째 위기
-  - 3막: 위기 — 상황 악화 혹은 반전
-  - 4막: 절정 — 핵심 갈등의 정점
-  - 5막: 결말 직전 — 마지막 선택의 기로
+- 3막 전체가 하나의 완결된 이야기 호를 이루어야 한다.
+  - 1막: 발단 — 사건의 시작과 첫 번째 선택의 기로
+  - 2막: 전개와 위기 — 첫 선택의 결과로 벌어지는 갈등
+  - 3막: 절정과 결말 직전 — 마지막 선택의 기로
 
 [선택지 규칙]
 - 선택지는 반드시 그 막의 서사 상황에서 자연스럽게 발생하는 두 가지 행동이어야 한다.
@@ -110,9 +108,7 @@ async function generateActs({ genre, character }) {
   "acts": [
     { "narrative": "1막 서사", "choice1": "선택지A", "choice2": "선택지B" },
     { "narrative": "2막 서사", "choice1": "선택지A", "choice2": "선택지B" },
-    { "narrative": "3막 서사", "choice1": "선택지A", "choice2": "선택지B" },
-    { "narrative": "4막 서사", "choice1": "선택지A", "choice2": "선택지B" },
-    { "narrative": "5막 서사", "choice1": "선택지A", "choice2": "선택지B" }
+    { "narrative": "3막 서사", "choice1": "선택지A", "choice2": "선택지B" }
   ]
 }`
 
@@ -146,7 +142,7 @@ async function generateResult({ genre, character, turns }) {
 주인공 이름: ${character.name}
 직업: ${character.jobClass}
 
-아래는 주인공이 걸어온 5막의 여정과 각 막에서 내린 선택입니다:
+아래는 주인공이 걸어온 3막의 여정과 각 막에서 내린 선택입니다:
 
 ${storyHistory}
 
@@ -154,7 +150,7 @@ ${storyHistory}
 - 결말은 위의 선택들이 쌓인 직접적인 결과여야 한다. 선택과 결말 사이의 인과가 명확해야 한다.
 - finalSentence: 주인공의 최후를 묘사하는 두 문장. 서사의 흐름과 선택이 어떻게 이 결말을 만들었는지 느껴지도록 쓸 것.
 - fate: "${character.name}, [선택들을 관통하는 주인공의 특성 한 구절]" 형식의 한 줄 요약.
-- keyMoments: 5막 중 결말에 가장 큰 영향을 준 3개의 막을 골라, 그 선택이 어떤 결과를 낳았는지 한 문장씩 서술한다.
+- keyMoments: 3막 각각에 대해, 그 선택이 어떤 결과를 낳았는지 한 문장씩 서술한다.
 
 반드시 다음 JSON 형식으로만 응답하세요 (다른 텍스트 없이):
 {
@@ -162,15 +158,15 @@ ${storyHistory}
   "fate": "${character.name}, [한 줄 요약]",
   "keyMoments": [
     { "actNumber": 1, "label": "제 1막의 선택", "description": "이 선택이 낳은 결과 한 문장" },
-    { "actNumber": 3, "label": "제 3막의 선택", "description": "이 선택이 낳은 결과 한 문장" },
-    { "actNumber": 5, "label": "제 5막의 선택", "description": "이 선택이 낳은 결과 한 문장" }
+    { "actNumber": 2, "label": "제 2막의 선택", "description": "이 선택이 낳은 결과 한 문장" },
+    { "actNumber": 3, "label": "제 3막의 선택", "description": "이 선택이 낳은 결과 한 문장" }
   ]
 }`
 
   const text = await callGemini(prompt)
   const parsed = extractJSON(text)
 
-  const icons = ['looks_one', 'looks_3', 'looks_5']
+  const icons = ['looks_one', 'looks_two', 'looks_3']
   return {
     finalSentence: parsed.finalSentence,
     fate: parsed.fate,
