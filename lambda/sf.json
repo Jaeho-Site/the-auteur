@@ -1,6 +1,6 @@
 [
   {
-    "genre": "SF탐사",
+    "genre": "SF 탐사",
     "jobClass": "요리사",
     "acts": [
       {
@@ -55,7 +55,7 @@
     }
   },
   {
-    "genre": "SF탐사",
+    "genre": "SF 탐사",
     "jobClass": "의사",
     "acts": [
       {
@@ -110,7 +110,7 @@
     }
   },
   {
-    "genre": "SF탐사",
+    "genre": "SF 탐사",
     "jobClass": "개발자",
     "acts": [
       {
@@ -165,7 +165,7 @@
     }
   },
   {
-    "genre": "SF탐사",
+    "genre": "SF 탐사",
     "jobClass": "가수",
     "acts": [
       {
@@ -220,7 +220,7 @@
     }
   },
   {
-    "genre": "SF탐사",
+    "genre": "SF 탐사",
     "jobClass": "배우",
     "acts": [
       {
@@ -275,7 +275,7 @@
     }
   },
   {
-    "genre": "SF탐사",
+    "genre": "SF 탐사",
     "jobClass": "운동선수",
     "acts": [
       {
@@ -330,7 +330,7 @@
     }
   },
   {
-    "genre": "SF탐사",
+    "genre": "SF 탐사",
     "jobClass": "무술감독",
     "acts": [
       {
@@ -385,7 +385,7 @@
     }
   },
   {
-    "genre": "SF탐사",
+    "genre": "SF 탐사",
     "jobClass": "대학생",
     "acts": [
       {
@@ -440,7 +440,7 @@
     }
   },
   {
-    "genre": "SF탐사",
+    "genre": "SF 탐사",
     "jobClass": "고등학교 교사",
     "acts": [
       {
@@ -495,7 +495,7 @@
     }
   },
   {
-    "genre": "SF탐사",
+    "genre": "SF 탐사",
     "jobClass": "프로게이머",
     "acts": [
       {
@@ -550,7 +550,7 @@
     }
   },
   {
-    "genre": "SF탐사",
+    "genre": "SF 탐사",
     "jobClass": "탐정",
     "acts": [
       {
@@ -605,7 +605,7 @@
     }
   },
   {
-    "genre": "SF탐사",
+    "genre": "SF 탐사",
     "jobClass": "해커",
     "acts": [
       {
